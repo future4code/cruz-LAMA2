@@ -8,11 +8,18 @@ export class UserBusiness {
 
     async createUser(user: UserInputDTO) {
 
+        if(!user.email || !user.name || !user.password || !user.role){
+            throw new Error(" Missing fields to complet")
+        }
+
+       
         const idGenerator = new IdGenerator();
         const id = idGenerator.generate();
 
         const hashManager = new HashManager();
         const hashPassword = await hashManager.hash(user.password);
+
+        console.log(id, user.email, user.name, hashPassword, user.role);        
 
         const userDatabase = new UserDatabase();
         await userDatabase.createUser(id, user.email, user.name, hashPassword, user.role);

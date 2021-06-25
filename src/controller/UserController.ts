@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { UserInputDTO, LoginInputDTO} from "../model/User";
+import { UserInputDTO, LoginInputDTO, User} from "../model/User";
 import { UserBusiness } from "../business/UserBusiness";
 import { BaseDatabase } from "../data/BaseDatabase";
+
 
 export class UserController {
     async signup(req: Request, res: Response) {
@@ -11,7 +12,7 @@ export class UserController {
                 email: req.body.email,
                 name: req.body.name,
                 password: req.body.password,
-                role: req.body.role
+                role: User.stringToUserRole(req.body.role)
             }
 
             const userBusiness = new UserBusiness();
