@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { UserInputDTO, LoginInputDTO, User} from "../model/User";
+import { UserInputDTO, LoginInputDTO, User } from "../model/User";
 import { UserBusiness } from "../business/UserBusiness";
 import { BaseDatabase } from "../data/BaseDatabase";
 
@@ -35,7 +35,8 @@ export class UserController {
                 email: req.body.email,
                 password: req.body.password
             };
-
+            
+            
             const userBusiness = new UserBusiness();
             const token = await userBusiness.getUserByEmail(loginData);
 
