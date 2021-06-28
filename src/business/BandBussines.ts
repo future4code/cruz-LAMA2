@@ -1,52 +1,62 @@
-import { LoginInputDTO, BandInputDTO, UserRole, InputFindBand } from "../model/User";
-import { UserDatabase } from "../data/UserDatabase";
+import {  BandInputDTO, UserRole, InputFindBand } from "../model/User";
 import { IdGenerator } from "../services/IdGenerator";
-import { HashManager } from "../services/HashManager";
 import { Authenticator } from "../services/Authenticator";
 import { BandDatabase } from "../data/BandDatabase";
+import { Band } from "../model/Band";
+import { FieldsNotFound} from "../error/FieldsNotFound";
+import { AdminError } from "../error/AdminError";
 
 
-export class BandBusiness {
+class BandBusiness {
+
+    constructor(
+        private idGenerator: IdGenerator,
+        private bandDatabase: BandDatabase
+    ) { }
 
     async createband(band: BandInputDTO) {
 
         if (!band.token || !band.name || !band.music_genre || !band.responsible) {
-            throw new Error(" Missing fields to complet")
+            throw new FieldsNotFound()
         }
 
         const getToken = new Authenticator();
         const resultToken = getToken.getData(band.token);
 
-        if(!resultToken){
+        if (!resultToken) {
             throw new Error()
         }
 
-        if(resultToken.role !== UserRole.ADMIN){
-            throw new Error("Just 'ADMIN' can use this endpoint")
+        if (resultToken.role !== UserRole.ADMIN) {
+            throw new AdminError()
         }
 
-        const idGenerator = new IdGenerator();
-        const id = idGenerator.generate();
 
-        const bandDatabase = new BandDatabase();
-        const bandCreateSucess = await bandDatabase.createBandDB(id, band.name, band.music_genre, band.responsible);
+        const id = this.idGenerator.generate();
+
+        const bandCreateSucess = await this.bandDatabase.createBandDB(
+            id,
+            band.name,
+            band.music_genre,
+            band.responsible
+        );
 
         return bandCreateSucess;
     }
 
-    async getBandByIdName(band: InputFindBand) {
+    async getBandByIdName(band: string):Promise<Band> {
 
-        if (!band.id) {
-            throw new Error(" Missing fields to complet")
+        if (!band) {
+            throw new FieldsNotFound()
         }
 
-        const bandDatabase = new BandDatabase();
-        const bandBD = await bandDatabase.getBand(band.id);
+        const bandBD = await this.bandDatabase.getBand(band);
 
-        if(!bandBD){
+        if (!bandBD) {
             throw new Error("Band not found!")
         }
 
         return bandBD;
     }
 }
+export default new BandBusiness(new IdGenerator,new BandDatabase) 

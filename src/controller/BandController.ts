@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { LoginInputDTO, BandInputDTO, InputFindBand } from "../model/User";
 import { UserBusiness } from "../business/UserBusiness";
 import { BaseDatabase } from "../data/BaseDatabase";
-import { BandBusiness } from "../business/BandBussines";
+import BandBusiness from "../business/BandBussines";
+import BandBussines from "../business/BandBussines";
 
 
 export class BandController {
@@ -16,36 +17,36 @@ export class BandController {
                 responsible: req.body.responsible
             }
 
-            const bandBusiness = new BandBusiness();
-            const messageBand = await bandBusiness.createband(input);
+            const messageBand = await BandBussines.createband(input);
 
-            res.status(200).send({ message: "Band create sucesseful!", "band": messageBand });
+            res.status(200).send({
+                "message": "Band create sucesseful!",
+                "band": messageBand
+            });
 
         } catch (error) {
-            res.status(400).send({ error: error.message });
+            res.status(error.code || 400).send({ error: error.message });
+        } finally {
+            await BaseDatabase.destroyConnection();
         }
 
-        await BaseDatabase.destroyConnection();
+
     }
 
     async findBand(req: Request, res: Response) {
         try {
 
-            const inputFindBand: InputFindBand = {
-                id: req.query.id as string,
-                // name: req.query.name as string
+            const inputFindBand = (req.query.id ?? req.query.name) as string;
 
-            };
+            const band = await BandBusiness.getBandByIdName(inputFindBand);
 
-            const bandBusiness = new BandBusiness();
-            const band = await bandBusiness.getBandByIdName(inputFindBand);
-
-            res.status(200).send({ band });
+            res.status(200).send(band);
         } catch (error) {
-            res.status(400).send({ error: error.message });
+            res.status(error.code || 400).send({ error: error.message });
+        } finally {
+            await BaseDatabase.destroyConnection();
         }
-
-        await BaseDatabase.destroyConnection();
     }
+
 
 }

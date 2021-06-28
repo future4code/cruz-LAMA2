@@ -1,5 +1,6 @@
 import { BaseDatabase } from "./BaseDatabase";
 import { User } from "../model/User";
+import { Band } from "../model/Band";
 
 export class BandDatabase extends BaseDatabase {
 
@@ -25,11 +26,16 @@ export class BandDatabase extends BaseDatabase {
     }
   }
 
-  public async getBand(id: string,name?:string): Promise<User> {
+  public async getBand(input:string): Promise<Band> {
     const result = await this.getConnection()
       .select("*")
       .from(BandDatabase.TABLE_NAME)
-      .where({ id:id });
+      .where({ id:input})
+      .orWhere({name:input});
+
+      if (!result[0]) {
+        throw new Error(` Couldn't find band with this '${input}' `)
+    }
 
     return result[0];
   }
